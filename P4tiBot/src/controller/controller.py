@@ -1,7 +1,9 @@
 class AppController:
-    def __init__(self, model, view):
+    # Corrección: Añadir settings_manager como parámetro
+    def __init__(self, model, view, settings_manager):
         self.model = model
         self.view = view
+        self.settings_manager = settings_manager # Guardar la referencia
 
         # Conectar los botones y eventos de la vista con métodos del controlador
         self.view.bind_search_action(self.handle_search)

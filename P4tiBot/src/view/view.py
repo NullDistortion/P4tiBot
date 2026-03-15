@@ -4,12 +4,10 @@ from tkinter import ttk
 class AppView(ctk.CTk):
     def __init__(self, app_settings):
         super().__init__()
-       # Asigna el diccionario a una variable de clase para poder usarlo
         self.app_settings = app_settings
 
         self.title("Gestor P4tiBot - Administrador")
         
-        # [Especulación] Ahora puedes aplicar los valores guardados en el JSON
         resolucion = self.app_settings.get("window_size", "1024x768")
         self.geometry(resolucion)
         
@@ -19,6 +17,18 @@ class AppView(ctk.CTk):
         # Configurar TabView
         self.tabview = ctk.CTkTabview(self)
         self.tabview.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # --- CORRECCIÓN FALTANTE ---
+        # Añadir explícitamente las pestañas
+        self.tab_prod = self.tabview.add("Catálogo de Productos")
+        self.tab_cat = self.tabview.add("Categorías")
+        self.tab_bank = self.tabview.add("Bancos y Métodos de Pago")
+
+        # Construir el contenido de cada pestaña
+        self._build_productos_tab()
+        self._build_categorias_tab()
+        self._build_bancos_tab()
+    
 
     def _build_productos_tab(self):
         self.tab_prod.grid_columnconfigure(0, weight=3)

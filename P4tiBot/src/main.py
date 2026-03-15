@@ -1,4 +1,4 @@
-from model.model import DatabaseModel
+from model.model import PatibotModel
 from view.view import AppView
 from controller.controller import AppController
 from utils.settings_manager import SettingsManager
@@ -9,7 +9,7 @@ def main():
     app_settings = settings_manager.load_settings()
 
     # 2. Crear el Modelo
-    model = DatabaseModel() 
+    model = PatibotModel() 
     
     # 3. Crear la Vista (pasándole las configuraciones cargadas)
     # La clase AppView deberá modificarse para aceptar 'app_settings'
