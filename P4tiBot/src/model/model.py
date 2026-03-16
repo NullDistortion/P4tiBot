@@ -1,90 +1,81 @@
-import sqlite3
-import os
-
 class PatibotModel:
-    def __init__(self, db_name="patibot_datos.db"):
-        self.db_name = db_name
-        self.inicializar_base_datos()
-
-    def _obtener_conexion(self):
-        return sqlite3.connect(self.db_name)
-
-    def inicializar_base_datos(self):
-        """Crea las tablas necesarias si no existen."""
-        conexion = self._obtener_conexion()
-        cursor = conexion.cursor()
+    def __init__(self):
+        # Datos MOCK listos para transicionar a SQL
+        self.categorias_mock = ["Electrónica", "Periféricos", "Cables", "Componentes"]
         
-        # Tabla para el Bot de Telegram
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            telegram_id TEXT NOT NULL UNIQUE,
-            nombre_usuario TEXT NOT NULL,
-            fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """)
+        self.productos_mock = [
+            {"id": 1, "nombre": "Teclado Mecánico RGB", "precio": 45.0, "stock": 10, "categoria": "Periféricos", "estado": "on", "descripcion": "Teclado RGB switch blue."},
+            {"id": 2, "nombre": "Ratón Inalámbrico", "precio": 25.0, "stock": 15, "categoria": "Periféricos", "estado": "off", "descripcion": ""},
+            {"id": 3, "nombre": "Monitor 24 Pulgadas", "precio": 150.0, "stock": 5, "categoria": "Electrónica", "estado": "on", "descripcion": "Monitor 144hz."},
+        ]
 
-        # Tabla para la interfaz gráfica y los productos
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS productos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
-            precio REAL NOT NULL,
-            stock INTEGER NOT NULL
-        )
-        """)
-        
-        conexion.commit()
-        conexion.close()
+        self.bancos_mock = [
+            ("B001", "Banco Pichincha", "1234567890", "Juan Perez", "1101234567"),
+            ("B002", "Banco Guayaquil", "0987654321", "Maria Lopez", "1107654321")
+        ]
 
-    # ==========================================
-    # MÉTODOS PARA PRODUCTOS (Requeridos por controller)
-    # ==========================================
+        self.usuarios_mock = []
+        print("[SISTEMA] Modelo inicializado en modo MOCK (Datos en memoria).")
+
+    def get_categories(self):
+        """FUTURO SQL: SELECT nombre FROM categorias"""
+        return self.categorias_mock
+
+    def get_banks_and_owners(self):
+        """FUTURO SQL: SELECT codigo_banco, banco, cuenta, titular, cedula FROM bancos"""
+        return self.bancos_mock
+
     def get_products(self, search_term=""):
-        """
-        Retorna los productos que coincidan con la búsqueda.
-        Si search_term está vacío, retorna todos.
-        """
-        conexion = self._obtener_conexion()
-        cursor = conexion.cursor()
+        """FUTURO SQL: SELECT * FROM productos WHERE nombre LIKE '%search_term%'"""
+        if not search_term:
+            return self.productos_mock
         
-        query = "SELECT id, nombre, precio, stock FROM productos WHERE nombre LIKE ?"
-        parametro = ('%' + search_term + '%',)
-        
-        cursor.execute(query, parametro)
-        resultados = cursor.fetchall()
-        conexion.close()
-        
+        resultados = []
+        term_lower = search_term.lower()
+        for p in self.productos_mock:
+            if term_lower in p["nombre"].lower():
+                resultados.append(p)
         return resultados
 
-    def add_product(self, nombre, precio, stock):
-        """Inserta un nuevo producto."""
-        conexion = self._obtener_conexion()
-        cursor = conexion.cursor()
-        
-        query = "INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)"
-        cursor.execute(query, (nombre, precio, stock))
-        
-        conexion.commit()
-        conexion.close()
+    def get_product_by_id(self, prod_id):
+        """FUTURO SQL: SELECT * FROM productos WHERE id = ?"""
+        for p in self.productos_mock:
+            if str(p["id"]) == str(prod_id):
+                return p
+        return None
 
-    # ==========================================
-    # MÉTODOS PARA EL BOT (Usuarios)
-    # ==========================================
+    def update_product_info(self, prod_id, descripcion, estado):
+        """FUTURO SQL: UPDATE productos SET descripcion = ?, estado = ? WHERE id = ?"""
+        for p in self.productos_mock:
+            if str(p["id"]) == str(prod_id):
+                p["descripcion"] = descripcion
+                p["estado"] = estado
+                print(f"[MOCK DB] Producto {prod_id} actualizado.")
+                return True
+        return False
+
     def registrar_usuario(self, telegram_id, nombre_usuario):
-        conexion = self._obtener_conexion()
-        cursor = conexion.cursor()
+        """FUTURO SQL: INSERT OR IGNORE INTO usuarios (telegram_id, nombre_usuario) VALUES (?, ?)"""
+        for u in self.usuarios_mock:
+            if u["telegram_id"] == telegram_id:
+                return False 
+        self.usuarios_mock.append({"telegram_id": telegram_id, "nombre_usuario": nombre_usuario})
+        return True
+    
+    def search_categories(self, search_term=""):
+        """
+        FUTURO SQL: 
+        SELECT nombre FROM categorias WHERE nombre LIKE '%search_term%'
+        """
+        if not search_term:
+            return self.categorias_mock
         
-        query = "INSERT OR IGNORE INTO usuarios (telegram_id, nombre_usuario) VALUES (?, ?)"
-        
-        try:
-            cursor.execute(query, (telegram_id, nombre_usuario))
-            conexion.commit()
-            exito = cursor.rowcount > 0
-        except sqlite3.Error as e:
-            print(f"Error BD: {e}")
-            exito = False
-        finally:
-            conexion.close()
-        
-        return exito
+        term_lower = search_term.lower()
+        return [c for c in self.categorias_mock if term_lower in c.lower()]
+
+    def get_products_by_category(self, category_name):
+        """
+        FUTURO SQL: 
+        SELECT * FROM productos WHERE categoria = ?
+        """
+        return [p for p in self.productos_mock if p.get("categoria") == category_name]
