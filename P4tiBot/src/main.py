@@ -11,7 +11,6 @@ def main():
     view = AppView(app_settings) 
     
     controller = AppController(model, view, settings_manager)
-    
     view.mainloop()
 
 if __name__ == "__main__":

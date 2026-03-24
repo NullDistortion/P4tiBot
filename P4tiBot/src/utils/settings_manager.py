@@ -12,7 +12,7 @@ class SettingsManager:
                     return json.load(f)
             except json.JSONDecodeError:
                 pass
-        return {"window_size": "1024x768", "theme": "dark"}
+        return {"window_size": "1024x768", "theme": "🌑  Oscuro"}
 
     def save_settings(self, settings):
         with open(self.config_file, "w", encoding="utf-8") as f:
